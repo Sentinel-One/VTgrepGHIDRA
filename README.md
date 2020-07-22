@@ -25,7 +25,7 @@ and then click `Refresh script list`.
 - *Search for same signer*: searches for files signed by the same certificate to sign the loaded file.
 - *Search for ImpHash*: searches for files with the same import hash.
 - *Search similar-to*: searches for files using "similar-to" attribute by VT.
-- *Customizations*: a compfortable GUI allows you to customize the query by masking/unmasking opcodes and operands before querying VT.
+- *Customizations*: a comfortable GUI allows you to customize the query by masking/unmasking opcodes and operands before querying VT.
 
 ## Examples
 
