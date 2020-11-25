@@ -6,6 +6,9 @@
 // Current known bugs: near branches gets masked out because OperandType.RELATIVE isn't correctly set by GHIDRA, as a workaround you can use the GUI panel to mask/unmask specific bytes.
 //@author: Kasif Dekel (@kasifdekel)
 //@category Search.VTGREP
+//@keybinding ctrl alt F9
+//@menupath Search.VTgrepGHIDRA
+//@toolbar vtgrepbutton.jpg
 import docking.widgets.EmptyBorderButton;
 import generic.continues.RethrowContinuesFactory;
 import ghidra.app.plugin.core.instructionsearch.InstructionSearchPlugin;
@@ -163,47 +166,81 @@ public class VTgrepGHIDRA extends GhidraScript {
             revalidate();
             setPreferredSize(500, 400);
         }
+        
+        String GetSerial(String text) throws Exception { 
+        	int f = text.indexOf("Serial : ");
+        	if(f == -1) { 
+        		throw new Exception("Please verify that osslsigncode is installed.");
+        	}
+    		String middle = text.substring(f + 9);
+    		return middle.substring(0, middle.indexOf("\n"));
+    	}
 
         public void check_cert() {
             String path = currentProgram.getExecutablePath();
             String stdout = "";
             String stderr = "";
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                File f = new File(path);
-                if (!f.exists()) { //for whatever reason :)
-                    popup("Something went wrong while processing this file");
-                    return;
-                }
-                String command = "powershell.exe (Get-AuthenticodeSignature '" + f.getPath() + "').SignerCertificate.Thumbprint";
-                Process powerShellProcess;
-                try {
-                    powerShellProcess = Runtime.getRuntime().exec(command);
-                    powerShellProcess.getOutputStream().close();
-                    stdout = IOUtils.toString(powerShellProcess.getInputStream(), StandardCharsets.UTF_8).trim();
-                    stderr = IOUtils.toString(powerShellProcess.getErrorStream(), StandardCharsets.UTF_8).trim();
-                } catch (IOException e) {
-                    popup("Something went wrong while processing this file");
-                    return;
-                }
-
-                if (!stderr.isEmpty() || stdout.isEmpty() || !stdout.matches("^[0-9a-fA-F]+$")) {
-                    popup("Something went wrong while processing this file");
-                    return;
-                }
-
-                try {
-                    stdout = URLEncoder.encode(":\"" + stdout + "\"", StandardCharsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e1) {
-                    popup("Error encounted while submitting data to VT.");
-                    e1.printStackTrace();
-                }
-
-                String url = "https://www.virustotal.com/gui/search/signature" + stdout + "/files";
-                OpenBrowser(url);
-
-            } else {
-                popup("Sorry, this feature isn't supported on OSes other than windows!");
+            String command = "";
+            String serial = "";
+            String Encoded = "";
+            Boolean isWindows = false;
+            File f = new File(path);
+            if (!f.exists()) { //for whatever reason :)
+                popup("Something went wrong while processing this file");
+                return;
             }
+            
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            	isWindows = true;
+            	command = "powershell.exe (Get-AuthenticodeSignature '" + f.getPath() + "').SignerCertificate.SerialNumber";
+            } else { 
+            	command = "osslsigncode verify -in " + f.getPath();
+            }
+            
+            Process shellProcess;
+            try {
+                shellProcess = Runtime.getRuntime().exec(command);
+                shellProcess.getOutputStream().close();
+                stdout = IOUtils.toString(shellProcess.getInputStream(), StandardCharsets.UTF_8).trim();
+                stderr = IOUtils.toString(shellProcess.getErrorStream(), StandardCharsets.UTF_8).trim();
+            } catch (IOException e) {
+                popup("Something went wrong while processing this file");
+                return;
+            }
+
+            if (!stderr.isEmpty() || stdout.isEmpty()) {
+                popup("Something went wrong while processing this file.");
+                return;
+            }
+            
+            if(isWindows) { 
+            	 if(stdout.matches("^[0-9a-fA-F]+$")) { 
+            		 serial = stdout;
+            	 }
+            	 
+            } else { 
+            	try { 
+            		serial = GetSerial(stdout);
+            	} catch (Exception e) { 
+            		popup(e.getMessage());
+            	}
+            }
+            
+            if(serial.isEmpty()) { 
+            	popup("Something went wrong while processing this file");
+                return;
+            }
+
+            try {
+                Encoded = URLEncoder.encode(":\"" + serial + "\"", StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException e1) {
+                popup("Error encounted while submitting data to VT.");
+                e1.printStackTrace();
+            }
+
+            String url = "https://www.virustotal.com/gui/search/signature" + Encoded + "/files";
+            OpenBrowser(url);
+
 
         }
 
