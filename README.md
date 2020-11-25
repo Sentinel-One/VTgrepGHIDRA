@@ -8,9 +8,21 @@ The current version is v0.1, This plugin is not production-ready yet, and unexpe
 
 ## Requirements
 
-No special requirements are required for this plugin, currently search by certificate is supported on Windows only.
+###### Windows
+No requirements
+###### Linux
+`apt-get install osslsigncode` or compile from source code (https://github.com/mtrojnar/osslsigncode) if you are experiencing any problems.
+###### MacOS
+
+`brew install osslsigncode`, also on MacOS, for some reason we didn't want to get into, you'll need to execute in orde for it to work: 
+
+```
+echo /usr/local/etc/openssl* | xargs -n1 -I{} mkdir -p {}/certs
+echo /usr/local/etc/openssl* | xargs -n1 -I{} ln -s {}/cert.pem {}/certs/ca-bundle.crt
+```
 
 ## Installation
+
 Place the script files in any of the ``Script Directories`` (Window->Script Manager or via the shortcut: ![Script Manager Shortcut](./pics/scriptmanager.png)):
 
 ![Scripting Directories](./pics/scriptingdirectories.png)
