@@ -9,7 +9,7 @@ The current version is v0.1, This plugin is not production-ready yet, and unexpe
 ## Requirements
 
 ###### Windows
-No requirements
+No requirements.
 ###### Linux
 `apt-get install osslsigncode` or compile from source code (https://github.com/mtrojnar/osslsigncode) if you are experiencing any problems.
 ###### MacOS
