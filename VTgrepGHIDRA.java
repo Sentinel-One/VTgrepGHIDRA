@@ -194,7 +194,7 @@ public class VTgrepGHIDRA extends GhidraScript {
             	isWindows = true;
             	command = "powershell.exe (Get-AuthenticodeSignature '" + f.getPath() + "').SignerCertificate.SerialNumber";
             } else { 
-            	command = "osslsigncode verify -in " + f.getPath();
+            	command = "osslsigncode verify -in " + f.getPath() + " -CAfile /dev/null";
             }
             
             Process shellProcess;
